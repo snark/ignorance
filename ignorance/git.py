@@ -13,12 +13,19 @@ except ImportError:
     from scandir import walk as _walk
 
 
+# TODO: Raise an error if base_path is not a parent of child_path
+# TODO: Replace this ugly hack with something that actually has understanding
+# of how paths work and is unlikely to be tripped up by edge cases.
 def strict_subpath(base_path, child_path):
     if os.path.join(child_path, '') == os.path.join(base_path, ''):
         return ''
     else:
         child_split = child_path.split(os.path.sep)
         base_split = base_path.split(os.path.sep)
+        if base_split[-1] == '':
+            base_split = base_split[:-1]
+        if child_split[-1] == '':
+            child_split = child_split[:-1]
         return os.path.join(
             *child_split[len(base_split):]
         )
