@@ -1,0 +1,9 @@
+# Exact matches
+quux
+
+# Single-asterisks
+ignored.*
+*.ignored
+
+# Brackets
+ba[rz]
