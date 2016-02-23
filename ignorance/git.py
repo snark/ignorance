@@ -5,6 +5,11 @@ import os
 import re
 from . import utils
 try:
+    # pathlib is in the stdlib in python 3.5+
+    from pathlib import PurePath
+except ImportError:
+    from pathlib2 import PurePath
+try:
     # scandir-powered walk is in the stdlib in python 3.5+
     from os import scandir  # NOQA
     from os import walk as _walk
@@ -13,22 +18,17 @@ except ImportError:
     from scandir import walk as _walk
 
 
-# TODO: Raise an error if base_path is not a parent of child_path
-# TODO: Replace this ugly hack with something that actually has understanding
-# of how paths work and is unlikely to be tripped up by edge cases.
-def strict_subpath(base_path, child_path):
-    if os.path.join(child_path, '') == os.path.join(base_path, ''):
+def strict_subpath(parent_path, child_path):
+    if os.path.join(child_path, '') == os.path.join(parent_path, ''):
         return ''
     else:
-        child_split = child_path.split(os.path.sep)
-        base_split = base_path.split(os.path.sep)
-        if base_split[-1] == '':
-            base_split = base_split[:-1]
-        if child_split[-1] == '':
-            child_split = child_split[:-1]
-        return os.path.join(
-            *child_split[len(base_split):]
-        )
+        child = PurePath(os.path.abspath(child_path))
+        parent = PurePath(os.path.abspath(parent_path))
+        if parent not in child.parents:
+            raise ValueError('{c} is not a child of {p}'.format(
+                c=child_path, p=parent_path
+            ))
+        return str(child.relative_to(parent))
 
 
 def walk(directory, onerror=None, filename='.gitignore',
