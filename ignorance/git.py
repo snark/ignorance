@@ -71,8 +71,10 @@ def walk(directory, onerror=None, filename='.gitignore',
             applicable_rules = [rule_list[rel_path]]
             if root != directory:
                 for p in Path(root).parents:
-                    rel_parent = strict_subpath(str(p), root)
+                    rel_parent = strict_subpath(starting_directory, str(p))
                     applicable_rules.append(rule_list[rel_parent])
+                    if p not in Path(starting_directory).parents:
+                        break
             # Our rules are actually ordered from the base down
             applicable_rules = applicable_rules[::-1]
             flat_list = list(
