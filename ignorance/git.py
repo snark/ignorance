@@ -16,6 +16,11 @@ try:
 except ImportError:
     # otherwise, grab it from scandir for the performance boost
     from scandir import walk as _walk
+try:
+    # pathlib is in python stdlib in python 3.5+
+    from pathlib import Path, PurePath
+except ImportError:
+    from pathlib2 import Path, PurePath
 
 
 def strict_subpath(parent_path, child_path):
@@ -43,8 +48,8 @@ def walk(directory, onerror=None, filename='.gitignore',
 
     starting_directory = os.path.abspath(directory)
 
-    # Rule list will be a dict of directory to (rule list, parent
-    # directory) tuples
+    # Rule list will be a dict, keyed by directory with each value a
+    # possibly-empty list of IgnoreRules
     rule_list = {}
     while True:
         for root, dirs, files in _walk(directory, onerror=onerror):
@@ -60,22 +65,14 @@ def walk(directory, onerror=None, filename='.gitignore',
             # SBC fix this up
             # We know we are either within the base_dir...
             rel_path = strict_subpath(starting_directory, current_dir)
-            if rel_path == '':
-                rule_list[''] = (rules, None)
-            # ...or a child dir
-            else:
-                rule_list[rel_path] = (rules, os.path.dirname(rel_path))
+            rule_list[rel_path] = rules
             # Now, make a list of rules, working our way back to the
             # base directory.
-            applicable_rules = []
-            cursor = rule_list[rel_path]
-            while cursor:
-                applicable_rules.append(cursor[0])
-                # Tiny hack for py2/py3 polyglot without using six
-                if isinstance(cursor[1], (''.__class__, u''.__class__)):
-                    cursor = rule_list[cursor[1]]
-                else:
-                    cursor = False
+            applicable_rules = [rule_list[rel_path]]
+            if root != directory:
+                for p in Path(root).parents:
+                    rel_parent = strict_subpath(str(p), root)
+                    applicable_rules.append(rule_list[rel_parent])
             # Our rules are actually ordered from the base down
             applicable_rules = applicable_rules[::-1]
             flat_list = list(
