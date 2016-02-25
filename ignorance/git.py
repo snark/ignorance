@@ -5,11 +5,6 @@ import os
 import re
 from . import utils
 try:
-    # pathlib is in the stdlib in python 3.5+
-    from pathlib import PurePath
-except ImportError:
-    from pathlib2 import PurePath
-try:
     # scandir-powered walk is in the stdlib in python 3.5+
     from os import scandir  # NOQA
     from os import walk as _walk

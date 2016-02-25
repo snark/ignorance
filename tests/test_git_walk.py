@@ -10,6 +10,7 @@ def test_basic_walk():
         files.extend(f)
     assert files == ['.gitignore', 'bam', 'foo', 'ignored', 'zap']
 
+
 def test_overrides():
     test_path = os.path.realpath(__file__)
     data_path = os.path.realpath(os.path.join(test_path, '../data/git'))
