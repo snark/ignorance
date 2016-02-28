@@ -12,8 +12,8 @@ class TmpDirBuilder:
         Given a string representing a manifest file in our data directory (such
         as git/foo), instantiate all files listed under its files key. Files
         will be empty, unless followed by an indented block, which will
-        represent the contents of the file. "_" will represent "no file", as
-        for indicating empty directories.
+        represent the (text) contents of the file. A terminal slash in a
+        manifest line creates a directory without creating a file.
 
         These manifests can be easily built with `tree -afFi --noreport`.
         """
@@ -42,14 +42,12 @@ class TmpDirBuilder:
                         startswith(' '):
                     # Write our file
                     path, fn = os.path.split(context['filename'])
-                    if not fn:
-                        continue
                     try:
                         os.makedirs(path)
                     except OSError as e:
                         if e.errno == errno.EEXIST and os.path.isdir(path):
                             pass
-                    if fn != '_':
+                    if fn:
                         with open(context['filename'], 'w') as f:
                             f.write('\n'.join(context['contents']))
         return tmp_root
