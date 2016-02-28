@@ -9,8 +9,8 @@ def test_basic_walk(tmpdir_builder):
     assert files == ['.gitignore', 'bam', 'foo', 'ignored', 'zap']
 
 
-def test_overrides(tmpdir_builder):
-    path = tmpdir_builder.setup('git/overrides')
+def test_negation(tmpdir_builder):
+    path = tmpdir_builder.setup('git/negation')
     files = []
     for r, d, f in ignorance.git.walk(path):
         files.extend(f)
