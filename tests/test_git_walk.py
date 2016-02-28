@@ -1,21 +1,18 @@
 import ignorance
-import os
 
 
-def test_basic_walk():
-    test_path = os.path.realpath(__file__)
-    data_path = os.path.realpath(os.path.join(test_path, '../data/git'))
+def test_basic_walk(tmpdir_builder):
+    path = tmpdir_builder.setup('git/basic_match')
     files = []
-    for r, d, f in ignorance.git.walk(os.path.join(data_path, 'basic')):
+    for r, d, f in ignorance.git.walk(path):
         files.extend(f)
     assert files == ['.gitignore', 'bam', 'foo', 'ignored', 'zap']
 
 
-def test_overrides():
-    test_path = os.path.realpath(__file__)
-    data_path = os.path.realpath(os.path.join(test_path, '../data/git'))
+def test_overrides(tmpdir_builder):
+    path = tmpdir_builder.setup('git/overrides')
     files = []
-    for r, d, f in ignorance.git.walk(os.path.join(data_path, 'override')):
+    for r, d, f in ignorance.git.walk(path):
         files.extend(f)
     assert 'bar' in files
     assert 'baz.tmpx' in files

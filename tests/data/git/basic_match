@@ -1,0 +1,20 @@
+.
+./.gitignore
+  # Exact matches
+  quux
+  
+  # Single-asterisks
+  ignored.*
+  *.ignored
+  
+  # Brackets
+  ba[rz]
+./bam
+./bar
+./baz
+./foo
+./foo.ignored
+./ignored
+./ignored.foo
+./quux
+./zap

@@ -1,0 +1,17 @@
+.
+./.gitignore
+  !order_counts.tmp
+  *.tmp
+  !override.tmp
+./bar
+./baz.tmpx
+./foo.tmp
+./order_counts.tmp
+./override.tmp
+./xxx
+./zap/
+./zap/bar
+./zap/baz/
+./zap/baz/quux
+./zap/foo.tmp
+./zap/override.tmp
