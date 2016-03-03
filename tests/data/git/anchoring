@@ -1,0 +1,46 @@
+./.git/
+./.gitignore
+  dir_a/bar
+  **/dir_a/baz
+  dir_c/**/quux
+  foo
+  */zap
+  spam/**/*.eggs
+./dir_a/
+./dir_a/bar
+./dir_a/baz
+./dir_a/foo
+./dir_a/quux
+./dir_a/spam.eggs
+./dir_a/zap
+./dir_b/
+./dir_b/dir_a/
+./dir_b/dir_a/bar
+./dir_b/dir_a/baz
+./dir_b/dir_a/foo
+./dir_b/dir_a/zap
+./dir_b/zap
+./dir_c/
+./dir_c/1/
+./dir_c/1/quux
+./dir_c/1/zap
+./dir_c/2/
+./dir_c/2/1/
+./dir_c/2/1/quux
+./dir_c/2/1/zap
+./dir_c/foo/
+./dir_c/quux
+./dir_c/zap
+./dir_c/eggs
+./foo
+./quux
+./spam/
+./spam/ham/
+./spam/ham/eggs
+./spam/ham/ham.eggs
+./spam/ham/spam.eggs
+./spam/ham.eggs
+./spam/spam/
+./spam/spam/eggs
+./spam/spam/ham.eggs
+./spam/spam/spam.eggs
