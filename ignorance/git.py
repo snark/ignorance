@@ -70,6 +70,7 @@ def walk(directory, onerror=None, filename='.gitignore',
                     applicable_rules.append(rule_list[rel_parent])
                     if p not in Path(starting_directory).parents:
                         break
+            applicable_rules.append(rule_list[''])
             # Our rules are actually ordered from the base down
             applicable_rules = applicable_rules[::-1]
             flat_list = list(
