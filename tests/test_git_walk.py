@@ -56,6 +56,9 @@ def test_anchoring(tmpdir_builder):
     assert 'dir_c/quux' not in files
     assert 'dir_c/1/quux' not in files
     assert 'dir_c/2/1/quux' not in files
+    # Leading slash anchors to the root
+    assert 'xyzzy' not in files
+    assert 'dir_a/xyzzy' in files
     # Finally, any .eggs file under spam/ should be ignored
     assert 'dir_a/spam.eggs' in files
     assert 'spam/ham/eggs' in files

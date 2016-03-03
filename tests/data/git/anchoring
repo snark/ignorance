@@ -4,6 +4,7 @@
   **/dir_a/baz
   dir_c/**/quux
   foo
+  /xyzzy
   */zap
   spam/**/*.eggs
 ./dir_a/
@@ -12,6 +13,7 @@
 ./dir_a/foo
 ./dir_a/quux
 ./dir_a/spam.eggs
+./dir_a/xyzzy
 ./dir_a/zap
 ./dir_b/
 ./dir_b/dir_a/
@@ -44,3 +46,4 @@
 ./spam/spam/eggs
 ./spam/spam/ham.eggs
 ./spam/spam/spam.eggs
+./xyzzy
