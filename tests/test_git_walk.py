@@ -28,6 +28,26 @@ def test_negation(tmpdir_builder):
     assert 'order_counts.tmp' not in files
 
 
+def test_directory_only(tmpdir_builder):
+    path = tmpdir_builder.setup('git/directory-only')
+    pathobj = Path(path)
+    files = []
+    for r, d, fs in ignorance.git.walk(path):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert 'foo/bar' not in files
+    assert 'foo/baz' not in files
+    assert 'foo/foo' not in files
+    assert 'bar/bar' not in files
+    assert 'bar/baz' not in files
+    assert 'bar/foo' not in files
+    assert 'baz/bar' not in files
+    # foo/ is directory only, so...
+    assert 'baz/foo' in files
+    # Unmatched by anything.
+    assert 'baz/baz' in files
+
+
 def test_anchoring(tmpdir_builder):
     path = tmpdir_builder.setup('git/anchoring')
     pathobj = Path(path)

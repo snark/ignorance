@@ -1,0 +1,15 @@
+./.gitignore
+  foo/
+  bar
+./bar/
+./bar/bar
+./bar/baz
+./bar/foo
+./baz/
+./baz/bar
+./baz/baz
+./baz/foo
+./foo/
+./foo/bar
+./foo/baz
+./foo/foo
