@@ -48,7 +48,7 @@ def test_directory_only(tmpdir_builder):
     assert 'baz/baz' in files
 
 
-def nesting(tmpdir_builder):
+def test_nesting(tmpdir_builder):
     path = tmpdir_builder.setup('nesting')
     pathobj = Path(path)
     files = []
