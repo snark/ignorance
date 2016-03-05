@@ -48,6 +48,26 @@ def test_directory_only(tmpdir_builder):
     assert 'baz/baz' in files
 
 
+def nesting(tmpdir_builder):
+    path = tmpdir_builder.setup('nesting')
+    pathobj = Path(path)
+    files = []
+    for r, d, fs in ignorance.git.walk(path):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert 'foo' not in files
+    assert 'dir_a/foo' in files
+    assert 'dir_a/bar' not in files
+    assert 'dir_a/baz' in files
+    assert 'dir_b/foo' not in files
+    assert 'dir_b/bar' not in files
+    assert 'dir_b/baz' not in files
+    assert 'dir_b/dir_a/foo' not in files
+    # Anchoring is relative *to the gitignore file*
+    assert 'dir_b/dir_a/bar' in files
+    assert 'dir_b/dir_a/baz' not in files
+
+
 def test_anchoring(tmpdir_builder):
     path = tmpdir_builder.setup('git/anchoring')
     pathobj = Path(path)

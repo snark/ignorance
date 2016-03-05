@@ -1,0 +1,21 @@
+./.gitignore
+  foo
+  bar
+./dir_a/
+./dir_a/.gitignore
+  !foo
+./dir_a/bar
+./dir_a/baz
+./dir_a/foo
+./dir_b/
+./dir_b/.gitignore
+  !dir_a/bar
+  baz
+./dir_b/bar
+./dir_b/baz
+./dir_b/dir_a/
+./dir_b/dir_a/bar
+./dir_b/dir_a/baz
+./dir_b/dir_a/foo
+./dir_b/foo
+./foo
