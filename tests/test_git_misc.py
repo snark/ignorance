@@ -2,6 +2,15 @@ import ignorance
 import itertools
 
 
+def test_rule_from_pattern_noops():
+    to_test = [
+        '', '#', '# Comment', '/', ' ', 'foo/***/bar', 'foo**bar'
+    ]
+    for pattern in to_test:
+        rule = ignorance.git.rule_from_pattern(pattern)
+        assert rule is None
+
+
 def test_rule_from_pattern_basics():
     to_test = [
         'foo', 'ba[rz]', 'ba?', '*.foo', 'foo/bar', 'foo/*/bar', '/foo',
