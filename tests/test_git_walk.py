@@ -49,7 +49,7 @@ def test_directory_only(tmpdir_builder):
 
 
 def test_nesting(tmpdir_builder):
-    path = tmpdir_builder.setup('nesting')
+    path = tmpdir_builder.setup('git/nesting')
     pathobj = Path(path)
     files = []
     for r, d, fs in ignorance.git.walk(path):
