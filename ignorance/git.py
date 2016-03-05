@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import functools
 import itertools
 import os
 import re
@@ -103,6 +102,8 @@ def rule_from_pattern(pattern, base_path=None, source=None):
     """
     if base_path and base_path != os.path.abspath(base_path):
         raise ValueError('base_path must be absolute')
+    # Store the exact pattern for our repr and string functions
+    orig_pattern = pattern
     # Early returns follow
     # Discard comments and seperators
     if pattern.strip() == '' or pattern[0] == '#':
@@ -110,6 +111,12 @@ def rule_from_pattern(pattern, base_path=None, source=None):
     # Discard anything with more than two consecutive asterisks
     if pattern.find('***') > -1:
         return
+    # Strip leading bang before examining double asterisks
+    if pattern[0] == '!':
+        negation = True
+        pattern = pattern[1:]
+    else:
+        negation = False
     # Discard anything with invalid double-asterisks -- they can appear
     # at the start or the end, or be surrounded by slashes
     for m in re.finditer(r'\*\*', pattern):
@@ -119,17 +126,8 @@ def rule_from_pattern(pattern, base_path=None, source=None):
                  pattern[start_index + 2] != '/')):
             return
 
-    # Store the exact pattern for our repr and string functions
-    orig_pattern = pattern
-
-    if pattern[0] == '!':
-        negation = True
-        pattern = pattern[1:]
-    else:
-        negation = False
-
     # Special-casing '/', which doesn't match any files or directories
-    if pattern.strip() == '/':
+    if pattern.rstrip() == '/':
         return
 
     directory_only = pattern[-1] == '/'
@@ -156,6 +154,6 @@ def rule_from_pattern(pattern, base_path=None, source=None):
         negation=negation,
         directory_only=directory_only,
         anchored=anchored,
-        base_path=Path(base_path),
+        base_path=Path(base_path) if base_path else None,
         source=source
     )

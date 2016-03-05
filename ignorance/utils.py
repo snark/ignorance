@@ -28,9 +28,12 @@ class IgnoreRule(collections.namedtuple('IgnoreRule_', IGNORE_RULE_FIELDS)):
 
     def match(self, abs_path):
         matched = False
-        rel_path = str(Path(abs_path).relative_to(self.base_path))
+        if self.base_path:
+            rel_path = str(Path(abs_path).relative_to(self.base_path))
+        else:
+            rel_path = str(Path(abs_path))
         if rel_path.startswith('./'):
-            rel_path = relpath[2:]
+            rel_path = rel_path[2:]
         if re.search(self.regex, rel_path):
             matched = True
         return matched
