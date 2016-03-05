@@ -13,22 +13,9 @@ except ImportError:
     from scandir import walk as _walk
 try:
     # pathlib is in python stdlib in python 3.5+
-    from pathlib import Path, PurePath
+    from pathlib import Path
 except ImportError:
-    from pathlib2 import Path, PurePath
-
-
-def strict_subpath(parent_path, child_path):
-    if os.path.join(child_path, '') == os.path.join(parent_path, ''):
-        return ''
-    else:
-        child = PurePath(os.path.abspath(child_path))
-        parent = PurePath(os.path.abspath(parent_path))
-        if parent not in child.parents:
-            raise ValueError('{c} is not a child of {p}'.format(
-                c=child_path, p=parent_path
-            ))
-        return str(child.relative_to(parent))
+    from pathlib2 import Path
 
 
 def walk(directory, onerror=None, filename='.gitignore',
@@ -41,7 +28,7 @@ def walk(directory, onerror=None, filename='.gitignore',
     if ignore_completely is None:
         ignore_completely = ['.git']
 
-    starting_directory = os.path.abspath(directory)
+    starting_directory = Path(os.path.abspath(directory))
 
     # Rule list will be a dict, keyed by directory with each value a
     # possibly-empty list of IgnoreRules
@@ -56,21 +43,19 @@ def walk(directory, onerror=None, filename='.gitignore',
                         rule = rule_from_pattern(line, os.path.abspath(root))
                         if rule:
                             rules.append(rule)
-            current_dir = os.path.abspath(root)
-            # SBC fix this up
-            # We know we are either within the base_dir...
-            rel_path = strict_subpath(starting_directory, current_dir)
+            current_dir = Path(os.path.abspath(root))
+            rel_path = str(current_dir.relative_to(starting_directory))
             rule_list[rel_path] = rules
             # Now, make a list of rules, working our way back to the
             # base directory.
             applicable_rules = [rule_list[rel_path]]
             if root != directory:
                 for p in Path(root).parents:
-                    rel_parent = strict_subpath(starting_directory, str(p))
+                    rel_parent = str(p.relative_to(starting_directory))
                     applicable_rules.append(rule_list[rel_parent])
-                    if p not in Path(starting_directory).parents:
+                    if p not in starting_directory.parents:
                         break
-            applicable_rules.append(rule_list[''])
+            applicable_rules.append(rule_list['.'])
             # Our rules are actually ordered from the base down
             applicable_rules = applicable_rules[::-1]
             flat_list = list(
@@ -151,7 +136,6 @@ def rule_from_pattern(pattern, base_path=None, source=None):
     # A slash is a sign that we're tied to the base_path of our rule
     # set.
     anchored = '/' in pattern[:-1]
-    relative_path = functools.partial(strict_subpath, base_path or '')
     if pattern[0] == '/':
         pattern = pattern[1:]
     if pattern[0] == '*' and pattern[1] == '*':
@@ -172,6 +156,6 @@ def rule_from_pattern(pattern, base_path=None, source=None):
         negation=negation,
         directory_only=directory_only,
         anchored=anchored,
-        relative_path=relative_path,
+        base_path=Path(base_path),
         source=source
     )

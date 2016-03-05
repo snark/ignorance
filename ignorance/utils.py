@@ -1,14 +1,19 @@
 # -*- coding: utf-8 -*-
+import collections
 import os
 import re
-import collections
+try:
+    # pathlib is in python stdlib in python 3.5+
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
 
 whitespace_re = re.compile(r'(\\ )+$')
 
 IGNORE_RULE_FIELDS = [
     'pattern', 'regex',  # Basic values
     'negation', 'directory_only', 'anchored',  # Behavior flags
-    'relative_path',  # Meaningful for gitignore-style behavior
+    'base_path',  # Meaningful for gitignore-style behavior
     'source'  # (file, line) tuple for reporting
 ]
 
@@ -23,7 +28,9 @@ class IgnoreRule(collections.namedtuple('IgnoreRule_', IGNORE_RULE_FIELDS)):
 
     def match(self, abs_path):
         matched = False
-        rel_path = self.relative_path(abs_path)
+        rel_path = str(Path(abs_path).relative_to(self.base_path))
+        if rel_path.startswith('./'):
+            rel_path = relpath[2:]
         if re.search(self.regex, rel_path):
             matched = True
         return matched
