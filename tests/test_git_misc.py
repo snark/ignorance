@@ -1,5 +1,11 @@
 import ignorance
 import itertools
+try:
+    # pathlib is in python stdlib in python 3.5+
+    from pathlib import Path
+except ImportError:
+    from pathlib2 import Path
+import pytest
 
 
 def test_rule_from_pattern_noops():
@@ -9,6 +15,18 @@ def test_rule_from_pattern_noops():
     for pattern in to_test:
         rule = ignorance.git.rule_from_pattern(pattern)
         assert rule is None
+
+
+def test_rule_from_pattern_basepath():
+    foo = ignorance.git.rule_from_pattern('foo')
+    assert foo.base_path is None
+    foo = ignorance.git.rule_from_pattern('foo', base_path='/')
+    assert foo.base_path == Path('/')
+    foo = ignorance.git.rule_from_pattern('foo', base_path='/foo/bar/baz')
+    assert foo.base_path == Path('/foo/bar/baz')
+    with pytest.raises(ValueError) as einfo:
+        ignorance.git.rule_from_pattern('foo', '.')
+    assert str(einfo.value) == 'base_path must be absolute'
 
 
 def test_rule_from_pattern_basics():
@@ -47,3 +65,30 @@ def test_rule_from_pattern_basics():
                     expected_rexp = expected_rexp[1:]
                 assert rule.regex == '^' + expected_rexp
                 assert rule.anchored
+
+
+def test_rule_from_pattern_double_asterisks():
+    # Notably, our current fnmatch-based regexes don't handle trailing
+    # values. This isn't a problem in the context of os.walk, but might
+    # make things more difficult for a straight match.
+    start = ignorance.git.rule_from_pattern('**/foo/bar')
+    assert start.match('foo/bar')
+    assert start.match('foo/bar/')
+    assert start.match('zap/foo/bar')
+    assert start.match('baz/zap/foo/bar')
+    assert not start.match('foo/baz/bar')
+    assert not start.match('foo/baz')
+    assert not start.match('fop/bar')
+    middle = ignorance.git.rule_from_pattern('foo/**/bar')
+    assert middle.match('foo/bar')
+    assert middle.match('foo/bar/')
+    assert middle.match('foo/baz/bar')
+    assert middle.match('foo/baz/zap/bar')
+    assert not middle.match('bar/foo/bar')
+    assert not middle.match('foo/baz')
+    assert not middle.match('fop/bar')
+    end = ignorance.git.rule_from_pattern('foo/**')
+    assert end.match('foo/baz/bar')
+    assert end.match('foo/baz')
+    assert not end.match('foo')
+    assert not end.match('foo/')
