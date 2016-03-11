@@ -36,12 +36,7 @@ def walk(directory, onerror=None, filename='.gitignore',
         for root, dirs, files in _walk(directory, onerror=onerror):
             rules = []
             if filename in files:
-                with open(os.path.join(root, filename)) as ignore_file:
-                    for line in ignore_file:
-                        line = line.rstrip('\n')
-                        rule = rule_from_pattern(line, os.path.abspath(root))
-                        if rule:
-                            rules.append(rule)
+                rules.extend(rules_from_file(filename, os.path.abspath(root)))
             current_dir = Path(os.path.abspath(root))
             rel_path = str(current_dir.relative_to(starting_directory))
             rule_list[rel_path] = rules
@@ -88,6 +83,21 @@ def walk(directory, onerror=None, filename='.gitignore',
             files[:] = [f for f in files if f not in ignore]
             yield root, dirs, files
         return
+
+
+def rules_from_file(filename, base_path):
+    return_rules = []
+    full_path = os.path.join(base_path, filename)
+    with open(full_path) as ignore_file:
+        counter = 0
+        for line in ignore_file:
+            counter += 1
+            line = line.rstrip('\n')
+            rule = rule_from_pattern(line, os.path.abspath(base_path),
+                                     source=(full_path, counter))
+            if rule:
+                return_rules.append(rule)
+    return return_rules
 
 
 def rule_from_pattern(pattern, base_path=None, source=None):

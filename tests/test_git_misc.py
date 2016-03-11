@@ -6,6 +6,10 @@ try:
 except ImportError:
     from pathlib2 import Path
 import pytest
+try:
+    from unittest import mock
+except ImportError:
+    import mock
 
 
 def test_rule_from_pattern_noops():
@@ -30,6 +34,9 @@ def test_rule_from_pattern_basepath():
 
 
 def test_rule_from_pattern_basics():
+    foo_rule = ignorance.git.rule_from_pattern('foo', source=('some_path', 1))
+    assert foo_rule.source == ('some_path', 1)
+
     to_test = [
         'foo', 'ba[rz]', 'ba?', '*.foo', 'foo/bar', 'foo/*/bar', '/foo',
         '/foo/bar', '**/foo/bar', 'foo/**/bar', 'foo/bar/**'
@@ -92,3 +99,20 @@ def test_rule_from_pattern_double_asterisks():
     assert end.match('foo/baz')
     assert not end.match('foo')
     assert not end.match('foo/')
+
+
+def test_rules_from_file(mocker):
+    expected = ['foo', '#comment', 'bar']
+    mf = mock.mock_open(read_data='\n'.join(expected))
+    mf.return_value.__iter__ = lambda self: iter(expected)
+    mf.return_value.__next__ = lambda self: self.readline()
+    mocker.patch('ignorance.git.open', mf, create=True)
+    rules = ignorance.git.rules_from_file('_', '/somepath')
+    assert len(rules) == 2
+    assert rules[0].pattern == 'foo'
+    assert rules[0].source == ('/somepath/_', 1)
+    assert rules[1].pattern == 'bar'
+    assert rules[1].source == ('/somepath/_', 3)
+    expected = []
+    rules = ignorance.git.rules_from_file('_', '/somepath')
+    assert len(rules) == 0

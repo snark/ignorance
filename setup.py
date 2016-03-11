@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     install_requires=requirements,
     setup_requires=['pytest-runner'],
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-mock', 'mock'],
     license="ISCL",
     zip_safe=False,
     keywords='ignorance',
