@@ -1,0 +1,12 @@
+./.git/
+./.git/foo
+./bar/
+./bar/baz
+./bar/zap
+./baz/
+./baz/.git
+./baz/.gitignore
+  !.git
+./foo
+./zap/
+./zap/foo

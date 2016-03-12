@@ -5,6 +5,7 @@ try:
     from pathlib import Path
 except ImportError:
     from pathlib2 import Path
+import pytest
 
 
 def test_basic_walk(tmpdir_builder):
@@ -46,6 +47,63 @@ def test_directory_only(tmpdir_builder):
     assert 'baz/foo' in files
     # Unmatched by anything.
     assert 'baz/baz' in files
+
+
+def test_ignore_completely(tmpdir_builder):
+    path = tmpdir_builder.setup('git/ignore-completely-1')
+    pathobj = Path(path)
+    files = []
+    for r, d, fs in ignorance.git.walk(path):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    # Default ignore is '.git'
+    assert '.git/foo' not in files
+    assert 'foo' in files
+    assert 'bar/baz' in files
+    assert 'bar/zap' in files
+    assert 'baz/.git' not in files
+    # Ignore-completely may be changed in the caller
+    files = []
+    for r, d, fs in ignorance.git.walk(path,
+                                       ignore_completely=['foo', 'bar/']):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert '.git/foo' not in files
+    assert '.git/bar' in files
+    assert 'foo' not in files
+    assert 'bar/baz' not in files
+    assert 'bar/zap' not in files
+    assert 'baz/.git' in files
+    assert 'zap/foo' not in files
+    # No negation rules allowed in ignore-completely
+    with pytest.raises(ValueError) as einfo:
+        for r, d, fs in ignorance.git.walk(
+                path, ignore_completely=['foo', 'bar/', '!baz']):
+            pass
+    assert str(einfo.value) == 'negation rules are not allowed in the ignore'\
+        + ' completely rules'
+    # Ignore-completely may be disabled in the caller
+    for r, d, fs in ignorance.git.walk(path, ignore_completely=False):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert '.git/foo' in files
+    assert '.git/bar' in files
+    assert 'foo' in files
+    assert 'bar/baz' in files
+    assert 'bar/zap' in files
+    assert 'baz/.git' in files
+    assert 'zap/foo' in files
+    path = tmpdir_builder.setup('git/ignore-completely-2')
+    # Ignore completely is non-overrideable within ignore files
+    pathobj = Path(path)
+    files = []
+    for r, d, fs in ignorance.git.walk(path):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert 'foo' in files
+    assert '.git/foo' not in files
+    assert 'bar/baz' in files
+    assert 'baz/.git' not in files
 
 
 def test_nesting(tmpdir_builder):

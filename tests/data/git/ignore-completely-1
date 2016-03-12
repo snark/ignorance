@@ -1,0 +1,12 @@
+./.git/
+./.git/bar
+./.git/foo
+./bar/
+./bar/baz
+./bar/zap
+./baz/
+./baz/bar
+./baz/.git
+./foo
+./zap/
+./zap/foo

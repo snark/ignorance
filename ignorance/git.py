@@ -24,9 +24,19 @@ def walk(directory, onerror=None, filename='.gitignore',
     top-down, while obeying the rules of .gitignore. Links will not
     be followed.
     """
+    # Git is incapable of adding .git files to stage -- by default walk()
+    # will skip it entirely in a *non-overrideable* manner.
     if ignore_completely is None:
         ignore_completely = ['.git']
-
+    elif not ignore_completely:
+        ignore_completely = []
+    ignore_completely = [
+        rule_from_pattern(p, source=('application-level override', None))
+        for p in ignore_completely
+    ]
+    if [rule for rule in ignore_completely if rule.negation]:
+        raise ValueError('negation rules are not allowed in the '
+                         'ignore completely rules')
     starting_directory = Path(os.path.abspath(directory))
 
     # Rule list will be a dict, keyed by directory with each value a
@@ -55,9 +65,8 @@ def walk(directory, onerror=None, filename='.gitignore',
             flat_list = list(
                 itertools.chain.from_iterable(applicable_rules)
             )
+            flat_list.extend(ignore_completely)
             ignore = []
-            for final_override in ignore_completely:
-                ignore.append(final_override)
             for d in dirs:
                 included = True
                 path = os.path.abspath(os.path.join(root, d))
