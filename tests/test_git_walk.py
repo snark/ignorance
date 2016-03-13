@@ -29,6 +29,31 @@ def test_negation(tmpdir_builder):
     assert 'order_counts.tmp' not in files
 
 
+def test_overrides(tmpdir_builder):
+    path = tmpdir_builder.setup('git/negation')
+    pathobj = Path(path)
+    files = []
+    overrides = ['*.tmpx', '!foo.tmp', 'override.*']
+    for r, d, fs in ignorance.git.walk(path, overrides=overrides):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert 'bar' in files
+    assert 'baz.tmpx' not in files
+    assert 'override.tmp' not in files
+    assert 'zap/baz/quux' in files
+    assert 'foo.tmp' in files
+    assert 'order_counts.tmp' not in files
+    assert 'zap/foo.tmp' in files
+    # Overrides are rooted to the starting directory.
+    files = []
+    overrides = ['!foo.tmp', 'zap/foo.tmp']
+    for r, d, fs in ignorance.git.walk(path, overrides=overrides):
+        fs = [str(Path(os.path.join(r, f)).relative_to(pathobj)) for f in fs]
+        files.extend(fs)
+    assert 'foo.tmp' in files
+    assert 'zap/foo' not in files
+
+
 def test_directory_only(tmpdir_builder):
     path = tmpdir_builder.setup('git/directory-only')
     pathobj = Path(path)

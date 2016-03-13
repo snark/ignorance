@@ -18,12 +18,20 @@ except ImportError:
 
 
 def walk(directory, onerror=None, filename='.gitignore',
-         ignore_completely=None):
+         overrides=None, ignore_completely=None):
     """
     Generate the file names in a directory tree by walking the tree
     top-down, while obeying the rules of .gitignore. Links will not
     be followed.
     """
+    starting_directory = Path(os.path.abspath(directory))
+
+    if not overrides:
+        overrides = []
+    overrides = [rule_from_pattern(
+        p, str(starting_directory), source=('manual override', None)
+    ) for p in overrides]
+
     # Git is incapable of adding .git files to stage -- by default walk()
     # will skip it entirely in a *non-overrideable* manner.
     if ignore_completely is None:
@@ -37,7 +45,6 @@ def walk(directory, onerror=None, filename='.gitignore',
     if [rule for rule in ignore_completely if rule.negation]:
         raise ValueError('negation rules are not allowed in the '
                          'ignore completely rules')
-    starting_directory = Path(os.path.abspath(directory))
 
     # Rule list will be a dict, keyed by directory with each value a
     # possibly-empty list of IgnoreRules
@@ -65,6 +72,8 @@ def walk(directory, onerror=None, filename='.gitignore',
             flat_list = list(
                 itertools.chain.from_iterable(applicable_rules)
             )
+            # overrides and ignore-completely patterns are always applicable
+            flat_list.extend(overrides)
             flat_list.extend(ignore_completely)
             ignore = []
             for d in dirs:
