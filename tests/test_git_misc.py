@@ -1,5 +1,6 @@
 import ignorance
 import itertools
+import os
 try:
     # pathlib is in python stdlib in python 3.5+
     from pathlib import Path
@@ -116,3 +117,56 @@ def test_rules_from_file(mocker):
     expected = []
     rules = ignorance.git.rules_from_file('_', '/somepath')
     assert len(rules) == 0
+
+
+def test_ancestor_vcs_directory(tmpdir_builder, mocker):
+    path = tmpdir_builder.setup('git/ancestor')
+    # Direct git directory
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(path, '.git'))
+    assert d == os.path.join(path, '.git')
+    # Immediate parent of git directory
+    d = ignorance.git.ancestor_vcs_directory(path)
+    assert d == path
+    # Immediate parent of git directory
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(path, 'foo'))
+    assert d == os.path.join(path, 'foo')
+    # Traverse ancestors
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(path, 'foo', 'bar'))
+    assert d == os.path.join(path, 'foo')
+    # From a descendant directory
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(
+        path, 'foo', 'baz', 'quux'))
+    assert d == os.path.join(path, 'foo')
+    # From a descendant file
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(
+        path, 'foo', 'baz', 'quux', '1'))
+    assert d == os.path.join(path, 'foo')
+    # Override VCS magic directory name
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(
+        path, 'bar', 'zap', '1'))
+    assert d == path
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(
+        path, 'bar', 'zap', '1'), dirname='.ham')
+    assert d == os.path.join(path, 'bar', 'zap')
+
+    def mock_expand(userpath):
+        return userpath.replace('~', path)
+    mocker.patch('ignorance.git.os.path.expanduser', mock_expand)
+    d = ignorance.git.ancestor_vcs_directory(os.path.join('~', 'foo', 'bar'))
+    assert d == os.path.join(path, 'foo')
+    with pytest.raises(ValueError) as einfo:
+        ignorance.git.ancestor_vcs_directory('~/nonesuch')
+    assert str(einfo.value) == '~/nonesuch does not exist'
+
+    def no_isdir(filepath):
+        return False
+    # Not a git directory
+    mocker.patch('ignorance.git.Path.is_dir', no_isdir)
+    d = ignorance.git.ancestor_vcs_directory(os.path.join(
+        path, 'foo', 'baz', 'quux', '1'))
+    assert d is None
+    # Edge case on non-existent path
+    mocker.patch('ignorance.git.os.path.exists', no_isdir)
+    with pytest.raises(ValueError) as einfo:
+        ignorance.git.ancestor_vcs_directory(path)
+    assert str(einfo.value) == '{} does not exist'.format(path)

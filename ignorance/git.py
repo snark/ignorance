@@ -17,6 +17,33 @@ except ImportError:
     from pathlib2 import Path
 
 
+def ancestor_vcs_directory(filepath, dirname='.git'):
+    """
+    Find the closet parent directory containing a magic VCS directory.
+    """
+    orig_path = filepath
+    filepath = os.path.expanduser(filepath)
+    if not os.path.exists(filepath):
+        raise ValueError("{} does not exist".format(orig_path))
+    # Edge case
+    if os.path.isdir(filepath) and os.path.split(filepath)[1] == '.git':
+        return filepath
+    path = Path(os.path.abspath(filepath))
+    if path.is_file():
+        path = path.parent
+    parents = list(path.parents)
+    parents.reverse()
+    found = None
+    current_dir = path
+    while not found and parents:
+        test = current_dir / dirname
+        if test.exists() and test.is_dir():
+            found = str(current_dir)
+        else:
+            current_dir = parents.pop()
+    return found
+
+
 def walk(directory, onerror=None, filename='.gitignore',
          overrides=None, ignore_completely=None):
     """

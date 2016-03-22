@@ -1,0 +1,17 @@
+.git/
+bar/
+bar/zap/
+bar/zap/.ham/
+bar/zap/1
+bar/zap/2
+baz/
+baz/.git
+foo/
+foo/.git/
+foo/bar
+foo/bar
+foo/baz/
+foo/baz/quux/
+foo/baz/zap
+foo/baz/quux/1
+foo/baz/quux/2
